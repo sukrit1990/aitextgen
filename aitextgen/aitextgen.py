@@ -706,7 +706,7 @@ class aitextgen:
 
         train_params = dict(
             accumulate_grad_batches=gradient_accumulation_steps,
-            gpus=n_gpu,
+            #gpus=n_gpu,
             max_steps=num_steps,
             gradient_clip_val=max_grad_norm,
             enable_checkpointing=False, #checkpoint_callback deprecated in pytorch_lighning v1.7
@@ -737,7 +737,7 @@ class aitextgen:
 
         if tpu_cores > 0:
             train_params["tpu_cores"] = tpu_cores
-            train_params["gpus"] = 0
+            #train_params["gpus"] = 0
             n_gpu = 0
 
         # benchmark gives a boost for GPUs if input size is constant,

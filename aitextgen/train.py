@@ -2,7 +2,7 @@ import os
 import shutil
 import subprocess
 import sys
-
+import logging
 import torch
 from torch.optim import AdamW
 from torch.utils.data import DataLoader
@@ -158,6 +158,8 @@ class ATGProgressBar(ProgressBar):
             torch.cuda.empty_cache()
 
         metrics = self.get_metrics(trainer, pl_module)
+        logging.info("metrics...")
+        logging.debug(f'metrics:{metrics}')
         current_loss = float(metrics["loss"])
         self.steps += 1
         avg_loss = 0
