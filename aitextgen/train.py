@@ -157,62 +157,62 @@ class ATGProgressBar(ProgressBar):
         if self.steps == 0 and self.gpu:
             torch.cuda.empty_cache()
 
-        metrics = self.get_metrics(trainer, pl_module)
-        logging.info("metrics...")
-        logging.debug(f'metrics:{metrics}')
-        current_loss = float(metrics["loss"])
-        self.steps += 1
-        avg_loss = 0
-        if current_loss == current_loss:  # don't add if current_loss is NaN
-            avg_loss = self.average_loss(
-                current_loss, self.prev_avg_loss, self.smoothing
-            )
-            self.prev_avg_loss = avg_loss
+        # metrics = self.get_metrics(trainer, pl_module)
+        # #logging.info("metrics...")
+        # #logging.debug(f'metrics:{metrics}')
+        # current_loss = float(metrics["loss"])
+        # self.steps += 1
+        # avg_loss = 0
+        # if current_loss == current_loss:  # don't add if current_loss is NaN
+            # avg_loss = self.average_loss(
+                # current_loss, self.prev_avg_loss, self.smoothing
+            # )
+            # self.prev_avg_loss = avg_loss
 
-        desc = f"Loss: {current_loss:.3f} — Avg: {avg_loss:.3f}"
+        # desc = f"Loss: {current_loss:.3f} — Avg: {avg_loss:.3f}"
 
-        if self.steps % self.progress_bar_refresh_rate == 0:
-            if self.gpu:
-                # via pytorch-lightning's get_gpu_memory_map()
-                result = subprocess.run(
-                    [
-                        shutil.which("nvidia-smi"),
-                        "--query-gpu=memory.used",
-                        "--format=csv,nounits,noheader",
-                    ],
-                    encoding="utf-8",
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    check=True,
-                )
-                gpu_memory = result.stdout.strip().split(os.linesep)[0]
-                desc += f" — GPU Mem: {gpu_memory} MB"
-            self.main_progress_bar.update(self.progress_bar_refresh_rate)
-            self.main_progress_bar.set_description(desc)
+        # if self.steps % self.progress_bar_refresh_rate == 0:
+            # if self.gpu:
+                # # via pytorch-lightning's get_gpu_memory_map()
+                # result = subprocess.run(
+                    # [
+                        # shutil.which("nvidia-smi"),
+                        # "--query-gpu=memory.used",
+                        # "--format=csv,nounits,noheader",
+                    # ],
+                    # encoding="utf-8",
+                    # stdout=subprocess.PIPE,
+                    # stderr=subprocess.PIPE,
+                    # check=True,
+                # )
+                # gpu_memory = result.stdout.strip().split(os.linesep)[0]
+                # desc += f" — GPU Mem: {gpu_memory} MB"
+            # self.main_progress_bar.update(self.progress_bar_refresh_rate)
+            # self.main_progress_bar.set_description(desc)
 
-        if TPUAccelerator.is_available() and self.save_every_check:
-            did_unfreeze = False
-            if self.enabled:
-                self.unfreeze_layers(pl_module)
-                did_unfreeze = True
-            self.save_pytorch_model(trainer, pl_module, tpu=True)
-            if did_unfreeze:
-                self.freeze_layers(pl_module)
+        # if TPUAccelerator.is_available() and self.save_every_check:
+            # did_unfreeze = False
+            # if self.enabled:
+                # self.unfreeze_layers(pl_module)
+                # did_unfreeze = True
+            # self.save_pytorch_model(trainer, pl_module, tpu=True)
+            # if did_unfreeze:
+                # self.freeze_layers(pl_module)
 
-        if self.enabled:
-            did_unfreeze = False
-            if not TPUAccelerator.is_available() and self.save_every_check:
-                self.unfreeze_layers(pl_module)
-                self.save_pytorch_model(trainer, pl_module)
-                did_unfreeze = True
+        # if self.enabled:
+            # did_unfreeze = False
+            # if not TPUAccelerator.is_available() and self.save_every_check:
+                # self.unfreeze_layers(pl_module)
+                # self.save_pytorch_model(trainer, pl_module)
+                # did_unfreeze = True
 
-            if self.generate_every > 0 and self.steps % self.generate_every == 0:
-                self.unfreeze_layers(pl_module)
-                self.generate_sample_text(trainer, pl_module)
-                did_unfreeze = True
+            # if self.generate_every > 0 and self.steps % self.generate_every == 0:
+                # self.unfreeze_layers(pl_module)
+                # self.generate_sample_text(trainer, pl_module)
+                # did_unfreeze = True
 
-            if did_unfreeze:
-                self.freeze_layers(pl_module)
+            # if did_unfreeze:
+                # self.freeze_layers(pl_module)
 
     def generate_sample_text(self, trainer, pl_module):
         self.main_progress_bar.write(
